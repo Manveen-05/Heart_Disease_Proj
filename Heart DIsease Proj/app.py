@@ -2,11 +2,15 @@ import streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
+import os
 
-# Load the models
-model = pickle.load(open("KNN_heart.pkl", "rb"))
-scaler = pickle.load(open("scaler.pkl", "rb"))
-features = pickle.load(open("features.pkl", "rb"))
+# Get the directory of the current script
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Load the models using absolute paths
+model = pickle.load(open(os.path.join(BASE_DIR, "KNN_heart.pkl"), "rb"))
+scaler = pickle.load(open(os.path.join(BASE_DIR, "scaler.pkl"), "rb"))
+features = pickle.load(open(os.path.join(BASE_DIR, "features.pkl"), "rb"))
 
 st.title("Heart Disease Prediction App")
 st.write("Enter the following details to predict the presence of heart disease.")
