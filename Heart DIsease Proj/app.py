@@ -1,20 +1,4 @@
-import os
-import sys
-import subprocess
-
-# Dynamically install required packages if they are missing
-try:
-    import streamlit as st
-    import pandas as pd
-    import numpy as np
-    import joblib
-    import sklearn
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--user", "streamlit", "pandas", "numpy", "scikit-learn", "joblib"])
-    import streamlit as st
-    import pandas as pd
-    import numpy as np
-    import joblib
+import streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
