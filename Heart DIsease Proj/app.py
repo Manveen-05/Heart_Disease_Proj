@@ -1,65 +1,48 @@
 import streamlit as st
+import pickle
 import pandas as pd
+import numpy as np
 import joblib
 
-# Load saved model, scaler, and expected columns
-model = joblib.load("knn_heart_model.pkl")
-scaler = joblib.load("heart_scaler.pkl")
-expected_columns = joblib.load("heart_columns.pkl")
+# Load the models using joblib
+model = joblib.load("KNN_heart.pkl")
+scaler = joblib.load("scaler.pkl")
+features = joblib.load("features.pkl")
 
-st.title("Heart Stroke Prediction by akarsh")
-st.markdown("Provide the following details to check your heart stroke risk:")
+st.title("Heart Disease Prediction App")
+st.write("Enter the following details to predict the presence of heart disease.")
 
-# Collect user input
-age = st.slider("Age", 18, 100, 40)
-sex = st.selectbox("Sex", ["M", "F"])
-chest_pain = st.selectbox("Chest Pain Type", ["ATA", "NAP", "TA", "ASY"])
-resting_bp = st.number_input("Resting Blood Pressure (mm Hg)", 80, 200, 120)
-cholesterol = st.number_input("Cholesterol (mg/dL)", 100, 600, 200)
-fasting_bs = st.selectbox("Fasting Blood Sugar > 120 mg/dL", [0, 1])
-resting_ecg = st.selectbox("Resting ECG", ["Normal", "ST", "LVH"])
-max_hr = st.slider("Max Heart Rate", 60, 220, 150)
-exercise_angina = st.selectbox("Exercise-Induced Angina", ["Y", "N"])
-oldpeak = st.slider("Oldpeak (ST Depression)", 0.0, 6.0, 1.0)
-st_slope = st.selectbox("ST Slope", ["Up", "Flat", "Down"])
+# Input fields
+col1, col2 = st.columns(2)
 
-# When Predict is clicked
+with col1:
+    age = st.number_input("Age", min_value=1, max_value=120, value=50)
+    cp = st.selectbox("Chest Pain Type (cp)", options=[0, 1, 2, 3])
+    chol = st.number_input("Serum Cholestoral in mg/dl (chol)", min_value=100, max_value=600, value=200)
+    restecg = st.selectbox("Resting Electrocardiographic Results (restecg)", options=[0, 1, 2])
+    exang = st.selectbox("Exercise Induced Angina (exang)", options=[0, 1], format_func=lambda x: "Yes (1)" if x == 1 else "No (0)")
+    slope = st.selectbox("Slope of the peak exercise ST segment (slope)", options=[0, 1, 2])
+    thal = st.selectbox("Thal", options=[0, 1, 2, 3])
+
+with col2:
+    sex = st.selectbox("Sex", options=[0, 1], format_func=lambda x: "Male (1)" if x == 1 else "Female (0)")
+    trestbps = st.number_input("Resting Blood Pressure (trestbps)", min_value=50, max_value=250, value=120)
+    fbs = st.selectbox("Fasting Blood Sugar > 120 mg/dl (fbs)", options=[0, 1], format_func=lambda x: "Yes (1)" if x == 1 else "No (0)")
+    thalach = st.number_input("Maximum Heart Rate Achieved (thalach)", min_value=60, max_value=250, value=150)
+    oldpeak = st.number_input("ST depression induced by exercise (oldpeak)", min_value=0.0, max_value=10.0, value=1.0, step=0.1)
+    ca = st.selectbox("Number of major vessels (ca)", options=[0, 1, 2, 3, 4])
+
 if st.button("Predict"):
-
-    # Create a raw input dictionary
-    raw_input = {
-        'Age': age,
-        'RestingBP': resting_bp,
-        'Cholesterol': cholesterol,
-        'FastingBS': fasting_bs,
-        'MaxHR': max_hr,
-        'Oldpeak': oldpeak,
-        'Sex_' + sex: 1,
-        'ChestPainType_' + chest_pain: 1,
-        'RestingECG_' + resting_ecg: 1,
-        'ExerciseAngina_' + exercise_angina: 1,
-        'ST_Slope_' + st_slope: 1
-    }
-
-    # Create input dataframe
-    input_df = pd.DataFrame([raw_input])
-
-    # Fill in missing columns with 0s
-    for col in expected_columns:
-        if col not in input_df.columns:
-            input_df[col] = 0
-
-    # Reorder columns
-    input_df = input_df[expected_columns]
-
-    # Scale the input
-    scaled_input = scaler.transform(input_df)
-
-    # Make prediction
-    prediction = model.predict(scaled_input)[0]
-
-    # Show result
-    if prediction == 1:
-        st.error("⚠️ High Risk of Heart Disease")
-    else:
-        st.success("✅ Low Risk of Heart Disease")
+    input_data = pd.DataFrame([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]], columns=features)
+    
+    try:
+        scaled_data = scaler.transform(input_data)
+        prediction = model.predict(scaled_data)
+        
+        st.subheader("Results")
+        if prediction[0] == 1:
+            st.error("Prediction: The model predicts a **high risk** of Heart Disease.")
+        else:
+            st.success("Prediction: The model predicts a **low risk** of Heart Disease.")
+    except Exception as e:
+        st.error(f"An error occurred during prediction: {e}")
