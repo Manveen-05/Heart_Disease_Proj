@@ -10,7 +10,7 @@ try:
     import joblib
     import sklearn
 except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit", "pandas", "numpy", "scikit-learn", "joblib"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--user", "streamlit", "pandas", "numpy", "scikit-learn", "joblib"])
     import streamlit as st
     import pandas as pd
     import numpy as np
